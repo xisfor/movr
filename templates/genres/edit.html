@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<h2>Genres</h2>
+
+<h3>Edit {{ genre.name }}</h3>
+
+<form action="/genres/{{ genre.id }}" method="POST">
+    <input type="hidden" name="_method" value="PUT" />
+
+    <input type="text" name="name" value="{{ genre.name }}" />
+    <input type="submit" value="Update" />
+</form>
+
+{% endblock %}

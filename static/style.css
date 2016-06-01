@@ -1,0 +1,16 @@
+.site-header {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #cfcfcf;
+}
+
+.site-header__logo {
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 40px;
+}
+
+.genres-table__delete-form {
+    display: inline;
+}
