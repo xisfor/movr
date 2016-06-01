@@ -100,33 +100,24 @@ def show_genres():
     genres = query_db('select id, name from genres order by id desc')
     return render_template('genres/index.html', genres=genres)
 
-
 @app.route('/genres', methods=['POST'])
 def create_genre():
-    db = get_db()
-    db.execute('insert into genres (name) values (?)', [request.form['name']])
-    db.commit()
+    execute_db('insert into genres (name) values (?)', [request.form['name']])
     flash('New genre was successfully posted')
     return redirect(url_for('show_genres'))
-
-
 
 @app.route('/genres/<int:genre_id>/edit', methods=['GET'])
 def edit_genre(genre_id):
     genre = query_db('select * from genres where id = ?', [genre_id], one=True)
-
     return render_template('genres/edit.html', genre=genre)
 
 # this should really just be methods=['PUT']
 @app.route('/genres/<int:genre_id>', methods=['PUT', 'DELETE', 'POST'])
 def update_genre(genre_id):
-
     method = request.form.get('_method', 'POST')
 
     if method == 'PUT':
-        db = get_db()
-        db.execute('update genres set name = ? where id = ?', [ request.form['name'], genre_id ] )
-        db.commit()
+        execute_db('update genres set name = ? where id = ?', [ request.form['name'], genre_id ] )
         flash('Genre was successfully updated')
         return redirect(url_for('show_genres'))
 
@@ -140,7 +131,6 @@ def update_genre(genre_id):
         flash('Invalid method')
         return render_template('genres/edit.html', genre=genre)
 
-# @app.route('/genres/<int:genre_id>', methods=['DELETE', 'POST'])
 
 
 # manage moves
