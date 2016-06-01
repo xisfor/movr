@@ -24,11 +24,24 @@
   <body>
 
     <div class="container site-header">
+
+      {% set navigation_bar = [
+          ('/', 'index', 'Home'),
+          ('/genres', 'genres', 'Genres'),
+          ('/texts', 'texts', 'Texts')
+      ] -%}
+      {% set active_page = active_page|default('index') -%}
+
       <nav>
         <ul class="nav nav-pills pull-right">
-          <li role="presentation" class="active"><a href="/">Home</a></li>
-          <li role="presentation"><a href="/genres">Genres</a></li>
+        {% for href, id, caption in navigation_bar %}
+          <li role="presentation" {% if id == active_page %} class="active"{% endif %}>
+            <a href="{{ href|e }}">{{ caption|e }}</a>
+          </li>
+        {% endfor %}
         </ul>
+
+
       </nav>
 
       <h3 class="site-header__logo text-muted"><a href="/">Movr</a></h3>

@@ -3,34 +3,26 @@
 
 {% block body %}
 
-<h2>Genres</h2>
+<h2>Moves for {{ genre.name }}</h2>
 
 <table class="table table-striped genres-table">
     <thead>
         <tr>
-            <th>:id</th>
-            <th>Genre name</th>
-            <th>Moves</th>
+            <th>Move name</th>
             <th>Actions</th>
         </tr>
     </thead>
 
     <tbody>
-    {% for genre in genres %}
+    {% for move in moves %}
 
     <tr>
         <td>
-            {{ genre.id }}
+            {{ move.name }}
         </td>
         <td>
-            {{ genre.name }}
-        </td>
-        <td>
-            <a href="/genres/{{ genre.id }}/moves">Moves</a>
-        </td>
-        <td>
-            <a href="/genres/{{ genre.id }}/edit" class="btn btn-sm btn-primary">Edit</a>
-            <form action="/genres/{{ genre.id }}" method="POST" class="table__delete-form">
+            <a href="/genres/{{ genre.id }}/moves/{{ move.id }}/edit" class="btn btn-sm btn-primary">Edit</a>
+            <form action="/genres/{{ genre.id }}/moves/{{ move.id }}" method="POST" class="table__delete-form">
                 <input type="hidden" name="_method" value="DELETE" />
                 <input type="submit" value="Delete" class="btn btn-sm btn-danger" />
             </form>
@@ -38,13 +30,13 @@
     </tr>
 
     {% else %}
-    <caption><em>No genres here so far</em></caption>
+    <caption><em>No moves here so far</em></caption>
     {% endfor %}
     </tbody>
 </table>
 
 
-<form action="/genres" method="POST" class="form-inline">
+<form action="/genres/{{ genre.id }}/moves" method="POST" class="form-inline">
     <div class="form-group">
         <input type="text" name="name" class="form-control" />
     </div>

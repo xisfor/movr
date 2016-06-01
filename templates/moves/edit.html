@@ -3,14 +3,14 @@
 
 {% block body %}
 
-<h2>Genres</h2>
+<h2>Moves</h2>
 
-<h3>Edit {{ genre.name }}</h3>
+<h3>Edit {{ move.name }}</h3>
 
-<form action="/genres/{{ genre.id }}" method="POST">
+<form action="/genres/{{ genre.id }}/moves/{{ move.id }}" method="POST">
     <input type="hidden" name="_method" value="PUT" />
 
-    <input type="text" name="name" value="{{ genre.name }}" />
+    <input type="text" name="name" value="{{ move.name }}" />
     <input type="submit" value="Update" />
 </form>
 

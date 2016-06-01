@@ -83,18 +83,15 @@ def close_db(error):
 # list available logs with actions
 @app.route('/')
 def show_entries():
-    # db = get_db()
-    # cur = db.execute('select title, text from entries order by id desc')
-    # entries = cur.fetchall()
-    # entries=[]
     return render_template('index.html')
 
 
 
 # manage genres
 #
-# /genres/new
-# /genres/{id}/edit
+# /genres - GET, POST
+# /genres/{id}/edit - GET
+# /genres/{id} - PUT, DELETE (POST)
 @app.route('/genres', methods=['GET'])
 def show_genres():
     genres = query_db('select id, name from genres order by id desc')
@@ -103,7 +100,7 @@ def show_genres():
 @app.route('/genres', methods=['POST'])
 def create_genre():
     execute_db('insert into genres (name) values (?)', [request.form['name']])
-    flash('New genre was successfully posted')
+    flash('New genre was successfully created')
     return redirect(url_for('show_genres'))
 
 @app.route('/genres/<int:genre_id>/edit', methods=['GET'])
@@ -111,13 +108,12 @@ def edit_genre(genre_id):
     genre = query_db('select * from genres where id = ?', [genre_id], one=True)
     return render_template('genres/edit.html', genre=genre)
 
-# this should really just be methods=['PUT']
 @app.route('/genres/<int:genre_id>', methods=['PUT', 'DELETE', 'POST'])
 def update_genre(genre_id):
     method = request.form.get('_method', 'POST')
 
     if method == 'PUT':
-        execute_db('update genres set name = ? where id = ?', [ request.form['name'], genre_id ] )
+        execute_db('update genres set name = ? where id = ?', [ request.form['name'], genre_id ])
         flash('Genre was successfully updated')
         return redirect(url_for('show_genres'))
 
@@ -135,8 +131,48 @@ def update_genre(genre_id):
 
 # manage moves
 #
-# /genres/{id}/moves/new
-# /genres/{id}/moves/{id}/edit
+# /genres/{id}/moves - GET, POST
+# /genres/{id}/moves/{id} - PUT, DELETE (POST)
+@app.route('/genres/<int:genre_id>/moves', methods=['GET'])
+def show_moves(genre_id):
+    genre = query_db('select * from genres where id = ?', [genre_id], one=True)
+    moves = query_db('select * from moves where genre_id = ? order by id desc', [genre_id])
+    return render_template('moves/index.html', genre=genre, moves=moves)
+
+@app.route('/genres/<int:genre_id>/moves', methods=['POST'])
+def create_move(genre_id):
+    execute_db('insert into moves (name, genre_id) values (?,?)', [request.form['name'], genre_id])
+    flash('New move was successfully created')
+    return redirect(url_for('show_moves', genre_id=genre_id))
+
+@app.route('/genres/<int:genre_id>/moves/<int:move_id>/edit', methods=['GET'])
+def edit_move(genre_id, move_id):
+    genre = query_db('select * from genres where id = ?', [genre_id], one=True)
+    move = query_db('select * from moves where genre_id = ? and id = ?', [genre_id, move_id], one=True)
+    return render_template('moves/edit.html', genre=genre, move=move)
+
+@app.route('/genres/<int:genre_id>/moves/<int:move_id>', methods=['PUT', 'DELETE', 'POST'])
+def update_move(genre_id, move_id):
+    method = request.form.get('_method', 'POST')
+
+    if method == 'PUT':
+        execute_db('update moves set name = ? where genre_id = ? and id = ?',
+            [request.form['name'], genre_id, move_id])
+        flash('Move was successfully updated')
+        return redirect(url_for('show_moves', genre_id=genre_id))
+
+    elif method == 'DELETE':
+        execute_db('delete from moves where genre_id = ? and id = ?',
+            [genre_id, move_id])
+        flash('Move was successfully deleted')
+        return redirect(url_for('show_moves', genre_id=genre_id))
+
+    else:
+        move = query_db('select * from moves where id = ?', [move_id], one=True)
+        flash('Invalid method')
+        return render_template('moves/edit.html', move=move)
+
+
 
 # import chat log
 #
