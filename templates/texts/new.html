@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% set active_page = "texts" %}
+
+{% block body %}
+
+<h2>Texts - new</h2>
+
+<div class="row">
+    <div class="col-sm-6">
+        <form action="/texts" method="POST" enctype="multipart/form-data">
+
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="title" class="form-control" name="title" id="title" placeholder="Title">
+            </div>
+
+            <div class="form-group">
+                <label for="input_file">File input</label>
+                <input type="file" id="input_file" name="input_file">
+            </div>
+
+            <div class="form-group">
+                <label for="chat_adapter">Chat adapter</label>
+                <select class="form-control" id="chat_adapter" name="chat_adapter">
+                    <option value="messenger_plus">Messenger Plus!</option>
+                </select>
+                <p class="help-block"></p>
+            </div>
+
+<!--             <div class="checkbox">
+                <label>
+                    <input type="checkbox"> Attempt anonymise?
+                </label>
+            </div> -->
+
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+{% endblock %}

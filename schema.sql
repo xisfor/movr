@@ -44,6 +44,15 @@ create table moves (
 --   }
 -- ]
 
+drop table if exists chats;
+create table chats (
+  id integer primary key autoincrement,
+  title text not null,
+  genre_id integer references genres(id),
+  session_count integer,
+  users text
+);
+
 
 -- lines: [
 --   {
@@ -55,3 +64,15 @@ create table moves (
 --     move_ids: [1,2,3],
 --   }
 -- ]
+
+drop table if exists lines;
+create table lines (
+  id integer primary key autoincrement,
+  seq integer not null,
+  text text,
+  session text,
+  time text,
+  user text,
+  chat_id integer references chats(id),
+  client_notification integer
+);

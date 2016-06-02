@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+{% set active_page = "texts" %}
+
+{% block body %}
+
+<h2>lines for {{ text.title }}</h2>
+
+<table class="table table-striped texts-table">
+    <thead>
+        <tr>
+            <th>seq</th>
+            <th>session</th>
+            <th>time</th>
+            <th>user</th>
+            <th>text</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for line in lines %}
+
+    <tr>
+        <td>{{ line.seq }}</td>
+        <td>{{ line.session }}</td>
+        <td>{{ line.time }}</td>
+        <td>{{ line.user }}</td>
+        <td>{{ line.text }}</td>
+    </tr>
+
+    {% else %}
+    <caption><em>No lines here so far</em></caption>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock %}
+
+

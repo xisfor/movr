@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+{% set active_page = "texts" %}
+
+{% block body %}
+
+<h2>Texts</h2>
+
+<a href="/texts/new" class="btn btn-primary">New</a>
+
+
+<table class="table table-striped texts-table">
+    <thead>
+        <tr>
+            <th>:id</th>
+            <th>text name</th>
+            <th>Lines</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for text in texts %}
+
+    <tr>
+        <td>
+            {{ text.id }}
+        </td>
+        <td>
+            {{ text.title }}
+        </td>
+        <td>
+            <a href="/texts/{{ text.id }}/lines">Lines</a>
+        </td>
+        <td>
+            <a href="/texts/{{ text.id }}/edit" class="btn btn-sm btn-primary">Edit</a>
+            <form action="/texts/{{ text.id }}" method="POST" class="table__delete-form">
+                <input type="hidden" name="_method" value="DELETE" />
+                <input type="submit" value="Delete" class="btn btn-sm btn-danger" />
+            </form>
+        </td>
+    </tr>
+
+    {% else %}
+    <caption><em>No texts here so far</em></caption>
+    {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock %}

@@ -8,7 +8,7 @@
 import os
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-    render_template, flash
+    render_template, flash, json, Response
 
 app = Flask(__name__)
 
@@ -19,7 +19,8 @@ app.config.update(dict(
     DEBUG=True,
     SECRET_KEY='development key',
     USERNAME='admin',
-    PASSWORD='default'
+    PASSWORD='default',
+    TMP_FOLDER='tmp'
 ))
 app.config.from_envvar('MOVR_SETTINGS', silent=True)
 
@@ -58,14 +59,14 @@ def get_db():
 def query_db(query, args=(), one=False):
     cur = get_db().execute(query, args)
     rv = cur.fetchall()
-    cur.close()
+    # cur.close()
     return (rv[0] if rv else None) if one else rv
 
 def execute_db(query, args=()):
     db = get_db()
     db.execute(query, args)
     db.commit()
-    db.close()
+    # db.close()
 
 
 
@@ -132,6 +133,7 @@ def update_genre(genre_id):
 # manage moves
 #
 # /genres/{id}/moves - GET, POST
+# /genres/{id}/moves/{id}/edit - GET
 # /genres/{id}/moves/{id} - PUT, DELETE (POST)
 @app.route('/genres/<int:genre_id>/moves', methods=['GET'])
 def show_moves(genre_id):
@@ -174,59 +176,118 @@ def update_move(genre_id, move_id):
 
 
 
+
+
+
+from bs4 import BeautifulSoup
+from werkzeug.utils import secure_filename
+
+from chat_adapters import *
+
 # import chat log
 #
-# /chats/new
+# /texts
+@app.route('/texts', methods=['GET'])
+def show_texts():
+    texts = query_db('select * from chats order by id desc')
+    return render_template('texts/index.html', texts=texts)
+
+@app.route('/texts/new', methods=['GET'])
+def new_text():
+    return render_template('texts/new.html')
+
+@app.route('/texts', methods=['POST'])
+def create_texts():
+
+    # Test for existing title...
+    chat_title = request.form['title']
+    chat = query_db('select * from chats where title = ?', [chat_title], one=True)
+
+    if chat_title == '':
+        flash('A text needs a title')
+        return redirect(url_for('new_text'))
+
+    if chat != None:
+        flash('A text with this title exists')
+        return redirect(url_for('new_text'))
+
+    if 'input_file' not in request.files:
+        flash('No file part')
+        return redirect(url_for('new_text'))
+
+    file = request.files['input_file']
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(url_for('new_text'))
+
+    # No file saving, just grab the contents
+    file_contents = file.read()
+
+    # Set chat parser adapter
+    if request.form['chat_adapter'] == 'messenger_plus':
+        adapter = MessengerPlusAdapter()
+
+    structured_data = adapter.parse_text(file_contents)
+
+    # if we've got this far without falling apart, we may as well go for it!
+    db = get_db()
+    db.execute('insert into chats (title, session_count, users) values (?,?,?)',
+        [chat_title, structured_data['session_count'], ','.join(structured_data['users'])])
+    db.commit()
+
+    chat = query_db('select * from chats where title = ?', [chat_title], one=True)
+    chat_id = chat['id']
+
+    # create
+    for line in structured_data['lines']:
+        # well, this should thrash the bloody db!
+        db.execute('insert into lines (seq, session, text, time, user, chat_id, client_notification) values (?,?,?,?,?,?,?)',
+            [ line['seq'], line['session'], line['text'], line['time'],
+                line['user'], chat_id, line['client_notification'] ])
+
+    db.commit()
+
+
+    flash('Text imported')
+    return redirect(url_for('show_lines', text_id=chat_id))
+
+
+
+
+
+@app.route('/texts/<int:text_id>/edit', methods=['GET'])
+def edit_text(text_id):
+    text = query_db('select * from chats where id = ?', [text_id], one=True)
+    return render_template('texts/edit.html', text=text)
+
+
+@app.route('/texts/<int:text_id>', methods=['PUT', 'DELETE', 'POST'])
+def update_text(text_id):
+    method = request.form.get('_method', 'POST')
+
+    if method == 'PUT':
+        execute_db('update chats set title = ? where id = ?', [ request.form['title'], text_id ])
+        flash('Text was successfully updated')
+        return redirect(url_for('show_texts'))
+
+    elif method == 'DELETE':
+        execute_db('delete from lines where chat_id = ?', [text_id])
+        execute_db('delete from chats where id = ?', [text_id])
+        flash('Text was successfully deleted')
+        return redirect(url_for('show_texts'))
+
+
 
 # mark-up chat logs
 #
 # /chats/{id}/lines
 # /chats/{id}/lines/{id}/edit
 
-
-
-@app.route('/add', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    db.execute('insert into entries (title, text) values (?, ?)',
-               [request.form['title'], request.form['text']])
-    db.commit()
-    flash('New entry was successfully posted')
-    return redirect(url_for('show_entries'))
+@app.route('/texts/<int:text_id>/lines', methods=['GET'])
+def show_lines(text_id):
+    text = query_db('select * from chats where id = ?', [text_id], one=True)
+    lines = query_db('select * from lines where chat_id = ? order by seq asc', [text_id])
+    return render_template('lines/index.html', text=text, lines=lines)
 
 
 
-
-
-
-
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    error = None
-    if request.method == 'POST':
-        if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
-        elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
-        else:
-            session['logged_in'] = True
-            flash('You were logged in')
-            return redirect(url_for('show_entries'))
-    return render_template('login.html', error=error)
-
-
-@app.route('/logout')
-def logout():
-    session.pop('logged_in', None)
-    flash('You were logged out')
-    return redirect(url_for('show_entries'))
-
-
-
-
-# if __name__ == "__main__":
-#     app.run()

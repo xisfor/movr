@@ -14,3 +14,7 @@
 .table__delete-form {
     display: inline;
 }
+
+.flash p {
+    padding: 5px 15px;
+}
