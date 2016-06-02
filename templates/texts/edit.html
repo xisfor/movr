@@ -16,6 +16,15 @@
                 <input type="title" class="form-control" name="title" id="title" value="{{ text.title }}">
             </div>
 
+            <div class="form-group">
+                <label for="genre">Chat genre</label>
+                <select class="form-control" id="genre" name="genre">
+                {% for genre in genres %}
+                    <option value="{{ genre.id }}">{{ genre.name }}</option>
+                {% endfor %}
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-default">Submit</button>
         </form>
     </div>

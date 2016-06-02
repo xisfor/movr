@@ -12,7 +12,8 @@
     <thead>
         <tr>
             <th>:id</th>
-            <th>text name</th>
+            <th>Text name</th>
+            <th>Genre</th>
             <th>Lines</th>
             <th>Actions</th>
         </tr>
@@ -22,12 +23,9 @@
     {% for text in texts %}
 
     <tr>
-        <td>
-            {{ text.id }}
-        </td>
-        <td>
-            {{ text.title }}
-        </td>
+        <td>{{ text.id }}</td>
+        <td>{{ text.title }}</td>
+        <td>{{ text.genre_name }}</td>
         <td>
             <a href="/texts/{{ text.id }}/lines">Lines</a>
         </td>

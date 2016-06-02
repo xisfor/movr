@@ -189,8 +189,12 @@ from chat_adapters import *
 # /texts
 @app.route('/texts', methods=['GET'])
 def show_texts():
-    texts = query_db('select * from chats order by id desc')
+    texts = query_db('select *, name as genre_name from chats '
+        ' left join genres on chats.genre_id = genres.id '
+        ' order by id desc')
     return render_template('texts/index.html', texts=texts)
+
+
 
 @app.route('/texts/new', methods=['GET'])
 def new_text():
@@ -258,7 +262,8 @@ def create_texts():
 @app.route('/texts/<int:text_id>/edit', methods=['GET'])
 def edit_text(text_id):
     text = query_db('select * from chats where id = ?', [text_id], one=True)
-    return render_template('texts/edit.html', text=text)
+    genres = query_db('select * from genres')
+    return render_template('texts/edit.html', text=text, genres=genres)
 
 
 @app.route('/texts/<int:text_id>', methods=['PUT', 'DELETE', 'POST'])
@@ -266,7 +271,8 @@ def update_text(text_id):
     method = request.form.get('_method', 'POST')
 
     if method == 'PUT':
-        execute_db('update chats set title = ? where id = ?', [ request.form['title'], text_id ])
+        execute_db('update chats set title = ?, genre_id = ? where id = ?',
+            [ request.form['title'], request.form['genre'], text_id ])
         flash('Text was successfully updated')
         return redirect(url_for('show_texts'))
 
