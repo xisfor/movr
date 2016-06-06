@@ -76,3 +76,15 @@ create table lines (
   chat_id integer references chats(id),
   client_notification integer
 );
+
+-- line_move: {
+--     id: 1,
+--     line_id: 1,
+--     move_id: 1
+-- }
+drop table if exists line_move;
+create table line_move (
+  id integer primary key autoincrement,
+  line_id integer not null,
+  move_id integer not null
+)

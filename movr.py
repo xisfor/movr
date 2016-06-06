@@ -24,10 +24,16 @@ app.config.update(dict(
 ))
 app.config.from_envvar('MOVR_SETTINGS', silent=True)
 
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
 def connect_db():
     """Connects to the specific database."""
     rv = sqlite3.connect(app.config['DATABASE'])
-    rv.row_factory = sqlite3.Row
+    rv.row_factory = dict_factory
     return rv
 
 
@@ -59,7 +65,7 @@ def get_db():
 def query_db(query, args=(), one=False):
     cur = get_db().execute(query, args)
     rv = cur.fetchall()
-    # cur.close()
+    cur.close()
     return (rv[0] if rv else None) if one else rv
 
 def execute_db(query, args=()):
@@ -189,7 +195,7 @@ from chat_adapters import *
 # /texts
 @app.route('/texts', methods=['GET'])
 def show_texts():
-    texts = query_db('select *, name as genre_name from chats '
+    texts = query_db('select *, chats.id as id, name as genre_name from chats '
         ' left join genres on chats.genre_id = genres.id '
         ' order by id desc')
     return render_template('texts/index.html', texts=texts)
@@ -286,14 +292,67 @@ def update_text(text_id):
 
 # mark-up chat logs
 #
-# /chats/{id}/lines
-# /chats/{id}/lines/{id}/edit
+# /chats/{id}/lines - GET, PUT
 
 @app.route('/texts/<int:text_id>/lines', methods=['GET'])
 def show_lines(text_id):
     text = query_db('select * from chats where id = ?', [text_id], one=True)
     lines = query_db('select * from lines where chat_id = ? order by seq asc', [text_id])
-    return render_template('lines/index.html', text=text, lines=lines)
+    moves = query_db('select * from moves where genre_id = ?', [text['genre_id']])
 
+    # FIXME: pretty sure one should be able to do this with a map
+    line_ids = []
+    for line in lines:
+        line_ids.append(int(line['id']))
+
+    line_ids_str = ','.join(map(str, line_ids))
+    lines_moves = query_db('select * from line_move where line_id in (%s)' % line_ids_str)
+
+    existing_line_moves = []
+    for lm in lines_moves:
+        existing_line_moves.append('line_%s,move_%s' % (lm['line_id'], lm['move_id']))
+
+    return render_template('lines/index.html', text=text, lines=lines, moves=moves, existing_line_moves=existing_line_moves)
+
+
+import re
+
+@app.route('/texts/<int:text_id>/lines', methods=['PUT', 'POST'])
+def update_lines(text_id):
+    method = request.form.get('_method', 'POST')
+
+    if method == 'PUT':
+        form_fields = request.form.to_dict()
+
+        for name, value in form_fields.iteritems():
+
+            # form field names look like "line_1,move_2"
+            if "line_" in name and "move_" in name:
+                line_str, move_str = name.split(',')
+
+                line_num = int(re.findall(r'\d+', line_str)[0])
+                move_num = int(re.findall(r'\d+', move_str)[0])
+
+                # cast to bool
+                is_line_move = value in '1'
+
+                update_line_move(line_num, move_num, is_line_move)
+
+        flash('Line moves were successfully updated')
+        return redirect(url_for('show_lines', text_id=text_id))
+
+
+def update_line_move(line_id, move_id, is_lm):
+
+    if is_lm:
+        # Create_or_update in sqlite...
+        # do some crazy shit to get the line_move.id
+        # http://stackoverflow.com/questions/418898/sqlite-upsert-not-insert-or-replace
+        execute_db('insert or replace into line_move (id, line_id, move_id) values '
+            '((select id from line_move where line_id = ? and move_id = ?),?,?)',
+                [line_id, move_id, line_id, move_id])
+
+    else:
+        execute_db('delete from line_move where line_id = ? and move_id = ?', [line_id, move_id])
 
 

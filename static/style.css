@@ -18,3 +18,7 @@
 .flash p {
     padding: 5px 15px;
 }
+
+.table-sticky-head thead {
+    background-color: #fff;
+}

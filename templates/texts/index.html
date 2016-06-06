@@ -12,9 +12,9 @@
     <thead>
         <tr>
             <th>:id</th>
-            <th>Text name</th>
+            <th>Text title</th>
             <th>Genre</th>
-            <th>Lines</th>
+
             <th>Actions</th>
         </tr>
     </thead>
@@ -27,13 +27,12 @@
         <td>{{ text.title }}</td>
         <td>{{ text.genre_name }}</td>
         <td>
-            <a href="/texts/{{ text.id }}/lines">Lines</a>
-        </td>
-        <td>
+            <a href="/texts/{{ text.id }}/lines" class="btn btn-sm btn-success">View lines</a>
             <a href="/texts/{{ text.id }}/edit" class="btn btn-sm btn-primary">Edit</a>
             <form action="/texts/{{ text.id }}" method="POST" class="table__delete-form">
                 <input type="hidden" name="_method" value="DELETE" />
-                <input type="submit" value="Delete" class="btn btn-sm btn-danger" />
+                <input type="submit" value="Delete" class="btn btn-sm btn-danger"
+                    onclick="return confirm('are you sure?')" />
             </form>
         </td>
     </tr>

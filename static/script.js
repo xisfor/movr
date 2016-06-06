@@ -1,0 +1,1 @@
+$('.table-sticky-head').stickyTableHeaders();

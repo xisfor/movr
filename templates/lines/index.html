@@ -5,34 +5,63 @@
 
 <h2>lines for {{ text.title }}</h2>
 
-<table class="table table-striped texts-table">
+<form action="/texts/{{ text.id }}/lines" method="POST">
+        <input type="hidden" name="_method" value="PUT" />
+<table class="table table-striped texts-table table-sticky-head">
     <thead>
         <tr>
-            <th>seq</th>
-            <th>session</th>
-            <th>time</th>
-            <th>user</th>
-            <th>text</th>
+            <th>Seq</th>
+            <th>Session</th>
+            <th>Time</th>
+            <th>User</th>
+            <th>Text
+                <!-- need to put this button somewhere, though still accessible with sticky header -->
+                <button type="submit" class="btn btn-default btn-xs pull-right">Update moves</button>
+            </th>
+
+            {% for move in moves %}
+            <th>{{ move.name }}</th>
+            {% endfor %}
+
         </tr>
     </thead>
 
     <tbody>
-    {% for line in lines %}
+        {% for line in lines %}
 
-    <tr>
-        <td>{{ line.seq }}</td>
-        <td>{{ line.session }}</td>
-        <td>{{ line.time }}</td>
-        <td>{{ line.user }}</td>
-        <td>{{ line.text }}</td>
-    </tr>
+        <tr>
+            <td>{{ line.seq }}</td>
+            <td>{{ line.session }}</td>
+            <td>{{ line.time }}</td>
+            <td>{{ line.user }}</td>
+            <td>{{ line.text }}</td>
 
-    {% else %}
-    <caption><em>No lines here so far</em></caption>
-    {% endfor %}
+            {% for move in moves %}
+            <td>
+                <label class="checkbox-inline">
+                    {#
+                        Props for hack to get an unchecked checkbox value:
+                        http://www.alexandrejoseph.com/blog/2015-03-03-flask-unchecked-checkbox-value.html
+                    #}
+
+                    {% set lm = "line_%s,move_%s" % (line.id, move.id) %}
+
+                    <input type="checkbox" name="{{ lm }}" value="1"{% if lm in existing_line_moves: %} checked{% endif %}>
+                    <input type="hidden" name="{{ lm }}" value="0">
+                </label>
+            </td>
+            {% endfor %}
+
+        </tr>
+
+        {% else %}
+        <caption><em>No lines here so far</em></caption>
+        {% endfor %}
     </tbody>
+
 </table>
 
+</form>
 
 
 {% endblock %}
