@@ -13,12 +13,12 @@ made to be run in isolation on the researchers machine.
 
 As a pre-requisite, your machine will need python and `virtualenv` installed. It
 is also assumed that you are using a real unix shell (Mac or Linux). Though you
-may well be abe to get it to wirk fine in Windows.
+may well be abe to get it to work fine in Windows.
 
   - `pip install virtualenv`
 
-Checkout the prject and go in to that folder. The following commands should get
-you up and running
+Checkout the project and go in to that folder. The following commands should get
+you up and running.
 
 Install requirements:
 
@@ -48,7 +48,7 @@ and import text. View the lines to markup with the selected genre's moves.
 The application uses the python programming language and the [Flask framework](http://flask.pocoo.org/)
 to create a web interface and manage actions.
 
-We use an in-situ sqlite database to store encoded lines and move information.
+We use an in-situ sqlite3 database to store encoded lines and move information.
 To clear this, you can either rerun `flask initdb` to empty it, or just delete
 the movr.db file from the project directory.
 
