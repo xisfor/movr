@@ -20,12 +20,18 @@ may well be abe to get it to wirk fine in Windows.
 Checkout the prject and go in to that folder. The following commands should get
 you up and running
 
+Install requirements:
+
   - `virtualenv .venv`
   - `source .venv/bin/activate`
   - `pip install -r requirements.txt`
 
+Prep app environment:
+
   - `export FLASK_APP=movr.py`
   - `export FLASK_DEBUG=1` - (optional)
+
+Create a database and run:
 
   - `flask initdb`
   - `flask run`
@@ -43,5 +49,7 @@ The application uses the python programming language and the [Flask framework](h
 to create a web interface and manage actions.
 
 We use an in-situ sqlite database to store encoded lines and move information.
+To clear this, you can either rerun `flask initdb` to empty it, or just delete
+the movr.db file from the project directory.
 
 The application is tested against the data in `_test_`.
