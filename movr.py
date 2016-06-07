@@ -236,6 +236,8 @@ def create_texts():
     # Set chat parser adapter
     if request.form['chat_adapter'] == 'messenger_plus':
         adapter = MessengerPlusAdapter()
+    elif request.form['chat_adapter'] == 'csv':
+        adapter = CSVAdapter()
 
     structured_data = adapter.parse_text(file_contents)
 
@@ -248,15 +250,42 @@ def create_texts():
     chat = query_db('select * from chats where title = ?', [chat_title], one=True)
     chat_id = chat['id']
 
-    # create
+    # create moves
+    if 'moves' in structured_data:
+        if 'genre_id' in request.form:
+            genre_id = request.form['genre_id']
+        else:
+            genre_name = 'Generated for %s' % request.form['title']
+            db.execute('insert into genres (name) values (?)', [genre_name])
+            genre = query_db('select * from genres where name = ?', [genre_name], one=True)
+            genre_id = genre['id']
+
+        for move in structured_data['moves']:
+            db.execute('insert into moves (name, genre_id) values (?,?)', [move, genre_id])
+
+        # regrab the newly inserted moves
+        moves = query_db('select * from moves where genre_id = ?', [genre_id])
+
+
+    cur = db.cursor()
+    # create lines
     for line in structured_data['lines']:
         # well, this should thrash the bloody db!
-        db.execute('insert into lines (seq, session, text, time, user, chat_id, client_notification) values (?,?,?,?,?,?,?)',
+        cur.execute('insert into lines (seq, session, text, time, user, chat_id, client_notification) values (?,?,?,?,?,?,?)',
             [ line['seq'], line['session'], line['text'], line['time'],
-                line['user'], chat_id, line['client_notification'] ])
+                line['user'], chat_id, line['client_notification']])
+
+        # add move to
+        if 'moves' in structured_data:
+            line_id = cur.lastrowid
+
+            cur.execute('update chats set genre_id = ? where id = ?', [genre_id, chat_id])
+
+            for move in line['moves']:
+                move_id = [i['id'] for i in moves if i['name'] == move][0]
+                update_line_move(line_id, move_id, True)
 
     db.commit()
-
 
     flash('Text imported')
     return redirect(url_for('show_lines', text_id=chat_id))
