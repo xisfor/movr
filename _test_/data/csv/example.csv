@@ -1,4 +1,4 @@
-line,date,time,participant,Utterance,Greeting,Rapport,Maint. Conv.,L'hood & ext,,direct,indirect,type,Expressive emoticons/acronyms,function
+line,date,time,participant,utterance,Greeting,Rapport,Maint. Conv.,L'hood & ext,,direct,indirect,type,Expressive emoticons/acronyms,function
 1,today,15:00,user_1,hey,asdf,,qw,,,,,,,
 2,today,16:00,user_2,yo,d d dsd ,,,,,,,,,
 ,,,,,,,,,,,,,,

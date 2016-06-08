@@ -55,7 +55,7 @@ class CSVAdapter:
                 ldata['session'] = line_data.pop('date')
                 ldata['time'] = line_data.pop('time')
                 ldata['user'] = line_data.pop('participant')
-                ldata['text'] = line_data.pop('Utterance')
+                ldata['text'] = line_data.pop('utterance')
                 ldata['client_notification'] = 'False'
 
                 if cur_session != ldata['session']:
